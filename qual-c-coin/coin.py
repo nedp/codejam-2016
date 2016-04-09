@@ -4,6 +4,7 @@ from math import sqrt
 
 MIN_BASE = 2
 MAX_BASE = 10
+MAX_DIVISOR = 1000
 
 CACHE = {}
 
@@ -33,12 +34,12 @@ def jamcoin(N, J, previous):
             # Interpret the coin in this base.
             interpretation = int(coin, base)
 
-            # Linear search for a divisor, using a CACHE
+            # Linear search for a divisor, using a CACHE, up to MAX_DIVISOR
             if interpretation in CACHE:
                 divisor = CACHE[interpretation]
             else:
                 divisor = None
-                for d in range(2, 1 + int(sqrt(interpretation))):
+                for d in range(2, MAX_DIVISOR):
                     if interpretation % d == 0:
                         divisor = d
                         break
