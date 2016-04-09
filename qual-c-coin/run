@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./coin.py <$1.in | tee $1.out || ( echo 'ASSERTION FAILURE'; exit )
+
+diff $1.want $1.out && echo 'PASS' || echo 'FAIL'
