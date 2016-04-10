@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from math import log
-
 IMPOSSIBLE = 'IMPOSSIBLE'
 
 def tiles(K, C, S):
@@ -11,9 +9,8 @@ def tiles(K, C, S):
     all_digits = range(K)
 
     # Split the original tiles into evenly sized chunks.
-    width = int((K + S - 1) / S)
-    print('C', C)
-    print('width', width)
+    # Round up to ensure we cover all original tiles.
+    width = (K + S - 1) // S
 
     # If there's not enough information per chunk, give up.
     if width > C:
@@ -26,6 +23,10 @@ def tiles(K, C, S):
         # Have each student verify their allocated tiles from the
         # original pattern; one chunk per student.
         my_digits = all_digits[width * i: min(width * (i+1), K)]
+
+        # If we already have all the information, break.
+        if not my_digits:
+            break
 
         # Interpret my assigned original tiles as a base-K number,
         # which will tell me my actual tile.
@@ -40,21 +41,29 @@ def tiles(K, C, S):
 
 def oracle(K, C, S, result):
     if result == IMPOSSIBLE:
-        assert(K / S > C)
+        assert(C*S < K)
         return
 
+    # We only have S students.
     assert(len(result) <= S)
+
+    # There should be no duplicates
+    sorted_result = sorted(result)
+    for p, c in zip(sorted_result[:-1], sorted_result[1:]):
+        assert(c != p)
+
+    # Make sure the chosen tiles actually exist.
+    max_tile = K**C
+    for tile in result:
+        assert(0 < tile <= max_tile)
 
     # Simulate cleaning the tiles and constructing knowledge set.
     unknown = set(range(K))
     for tile in result:
-        original_tiles = to_base(tile - 1, K, C)
-        for i in original_tiles:
+        revealed_tiles = to_base(tile - 1, K, C)
+        for i in revealed_tiles:
             if i in unknown:
                 unknown.remove(i)
-
-    print(unknown)
-
     assert(not unknown)
 
 def to_base(n, base, width):
@@ -63,8 +72,12 @@ def to_base(n, base, width):
     result = []
 
     for _ in range(width):
-        result.append(n % base)
-        n = int(n / base)
+        digit = n % base
+        result.append(digit)
+
+        n -= digit
+        assert(n % base == 0)
+        n = n // base
 
     return result
 
@@ -74,6 +87,9 @@ def from_base(digits, base):
     for d in digits:
         result += offset * d
         offset *= base
+
+    for a, b in zip(to_base(result, base, len(digits)), digits):
+        assert(a == b)
 
     return result
 
@@ -88,3 +104,4 @@ if __name__ == '__main__':
         items = map(str, result) if result != IMPOSSIBLE else [IMPOSSIBLE]
 
         print("Case #{}: {}".format(i, ' '.join(items)))
+
