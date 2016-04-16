@@ -12,12 +12,18 @@ def largest(bffs):
         if bffs[bff] == kid and kid < bff:
             cores.add((kid, bff))
 
+    # Expand outward from the cores.
+    # Since each core is self contained (the 'arms' only depend
+    # on the core itself, and the core doesn't need anything else),
+    # we can add as many of these together as we can find.
     total = 0
     for a, b in cores:
         total += 2
         total += deepest(bffs, inverse, a, [a, b])
         total += deepest(bffs, inverse, b, [a, b])
 
+    # There's still a chance that a single cycle of bffs
+    # is better than the sum of all the cores, so check that too.
     for kid in range(len(bffs)):
         start = kid
         used = set()
